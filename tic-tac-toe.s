@@ -7,16 +7,19 @@ main:
 	jal render_board
 	pop $ra
 
-    li $a0, 2
+    li $a0, 0
     la $a1, state
+    li $a2, 1
 
     push $ra
-    jal has_won
+    jal make_move
     pop $ra
 
-    move $a0, $v0
-    li $v0, 1
-    syscall
+    la $a0, state
+
+	push $ra
+	jal render_board
+	pop $ra
 
 	li $v0, 0
 	jr $ra
@@ -202,6 +205,33 @@ has_won__true:
     li $v0, 1
     jr $ra
 
+make_move:
+# $a0 -> index which needs to be changed
+# $a1 -> the current board state
+# $a2 -> the value which the board state needs to be changed to
+make_move__prologue:
+
+make_move__body:
+    blt $a0, 0, make_move__fail
+    bgt $a0, 8, make_move__fail
+
+    add $t0, $a1, $a0
+    lb $t0, 0($t0)
+
+    bne $t0, 0, make_move__fail
+
+    add $t0, $a1, $a0
+    sb $a2, 0($t0)
+
+make_move__success:
+    li $v0, 1
+    j make_move__epilogue
+
+make_move__fail:
+    li $v0, 0
+
+make_move__epilogue:
+    jr $ra
+
 .data
-	state: .byte 0, 0, 1, 2, 2, 2, 1, 0, 0
-    test: .asciiz "GOT HERE!"
+	state: .byte 0, 0, 0, 0, 0, 0, 0, 0, 0
