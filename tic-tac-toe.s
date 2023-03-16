@@ -1,31 +1,35 @@
 # A tic-tac-toe game with an AI opponent made entirely in MIPS-32
 
 main:
+
+main__loop:
+	li $a1, 2
 	la $a0, state
-
+	
 	push $ra
-	jal render_board
-	pop $ra
+	jal has_won
+	pop $ra 
 
-    li $a0, 0
-    la $a1, state
-    li $a2, 1
+    beq $v0, 1, main__exit
 
     push $ra
-    jal make_move
+    jal is_board_full
     pop $ra
 
-    la $a0, state
+    beq $v0, 1, main__exit
 
-	push $ra
-	jal render_board
-	pop $ra
+    push $ra
+    jal render_board
+    pop $ra
 
+	j main__loop
+	
+main__exit:
 	li $v0, 0
 	jr $ra
 
 render_board:
-# $a0 -> the current board state
+# $a0 - the current board state
 # - - -   
 # - - -
 # - - -
@@ -60,18 +64,18 @@ render_board__loop_col:
 
 	pop $a0
 
-    add $t1, $t1, 1
+    	add $t1, $t1, 1
 
 	j render_board__loop_col
 
 render_board__loop_col_end:
     push $a0
 
-	li $v0, 11
-	li $a0, '\n'
-	syscall
+    li $v0, 11
+    li $a0, '\n'
+    syscall
 
-	pop $a0
+    pop $a0
 
     add $t0, $t0, 1
 
@@ -128,8 +132,8 @@ render_piece__epilogue:
 	jr $ra
 
 has_won:
-# $a0 -> the player we're checking if they have won
-# $a1 -> the current board state
+# $a1 -> the player we're checking if they have won
+# $a0 -> the current board state
 
 # 001010100 -> 84
 # 100010001 -> 273 
@@ -152,14 +156,14 @@ has_won__body:
 has_won__create_bitstate:
     beq $t0, 9, has_won__evaluate
 
-    push $a1
+    push $a0
 
-    add $a1, $a1, $t0
-    lb $a1, 0($a1)
+    add $a0, $a0, $t0
+    lb $a0, 0($a0)
 
-    beq $a1, $a0, has_won__add_value_to_bitstate 
+    beq $a0, $a1, has_won__add_value_to_bitstate 
 
-    pop $a1
+    pop $a0
 
     add $t0, $t0, 1
 
@@ -169,7 +173,7 @@ has_won__add_value_to_bitstate:
     sllv $t4, $t3, $t0
     add $t1, $t1, $t4
     add $t0, $t0, 1
-    pop $a1
+    pop $a0
     j has_won__create_bitstate
 
 has_won__evaluate:
@@ -204,6 +208,38 @@ has_won__false:
 has_won__true:
     li $v0, 1
     jr $ra
+
+is_board_full:
+    # $a0 -> current board state
+
+    is_board_full__prologue:
+        li $t0, 0
+
+    is_board_full__body:
+    
+    is_board_full__loop:
+        beq $t0, 9, is_board_full__true
+
+        push $a0
+
+        add $a0, $a0, $t0
+        lb $t1, 0($a0)
+
+        beq $t1, 0, is_board_full__false
+
+        pop $a0
+
+        add $t0, $t0, 1
+
+        j is_board_full__loop
+
+    is_board_full__true:
+        li $v0, 1
+        jr $ra
+
+    is_board_full__false:
+        li $v0, 0
+        jr $ra
 
 make_move:
 # $a0 -> index which needs to be changed
