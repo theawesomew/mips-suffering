@@ -1,11 +1,11 @@
 # A tic-tac-toe game with an AI opponent made entirely in MIPS-32
 
-main:
+main:	
+	li $a1, 2
 
 main__loop:
-	li $a1, 2
-	la $a0, state
-	
+    la $a0, state
+
 	push $ra
 	jal has_won
 	pop $ra 
@@ -20,6 +20,21 @@ main__loop:
 
     push $ra
     jal render_board
+    pop $ra
+
+    push $a0
+    li $v0, 4
+    la $a0, enter_move
+    syscall
+    pop $a0
+
+    li $v0, 5
+    syscall
+
+    move $a2, $v0
+    
+    push $ra
+    jal make_move
     pop $ra
 
 	j main__loop
@@ -64,7 +79,7 @@ render_board__loop_col:
 
 	pop $a0
 
-    	add $t1, $t1, 1
+    add $t1, $t1, 1
 
 	j render_board__loop_col
 
@@ -242,22 +257,22 @@ is_board_full:
         jr $ra
 
 make_move:
-# $a0 -> index which needs to be changed
-# $a1 -> the current board state
-# $a2 -> the value which the board state needs to be changed to
+# $a2 -> index which needs to be changed
+# $a0 -> the current board state
+# $a1 -> the value which the board state needs to be changed to
 make_move__prologue:
 
 make_move__body:
-    blt $a0, 0, make_move__fail
-    bgt $a0, 8, make_move__fail
+    blt $a2, 0, make_move__fail
+    bgt $a2, 8, make_move__fail
 
-    add $t0, $a1, $a0
+    add $t0, $a0, $a2
     lb $t0, 0($t0)
 
     bne $t0, 0, make_move__fail
 
-    add $t0, $a1, $a0
-    sb $a2, 0($t0)
+    add $t0, $a0, $a2
+    sb $a1, 0($t0)
 
 make_move__success:
     li $v0, 1
@@ -271,3 +286,4 @@ make_move__epilogue:
 
 .data
 	state: .byte 0, 0, 0, 0, 0, 0, 0, 0, 0
+    enter_move: .asciiz "Enter your move [0-8]: "
