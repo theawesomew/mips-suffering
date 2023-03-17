@@ -4,17 +4,17 @@ main:
 	li $a1, 2
 
 main__loop:
-    la $a0, state
+    la $a0, state  
 
 	push $ra
 	jal has_won
-	pop $ra 
+	pop $ra    
 
-    beq $v0, 1, main__exit
+    beq $v0, 1, main__exit 
 
     push $ra
     jal is_board_full
-    pop $ra
+    pop $ra 
 
     beq $v0, 1, main__exit
 
@@ -37,9 +37,17 @@ main__loop:
     jal make_move
     pop $ra
 
+    add $a1, $a1, 1
+    rem $a1, $a1, 3
+    add $a1, $a1, 1
+
 	j main__loop
 	
 main__exit:
+    push $ra
+    jal render_board
+    pop $ra
+
 	li $v0, 0
 	jr $ra
 
@@ -240,13 +248,13 @@ is_board_full:
         add $a0, $a0, $t0
         lb $t1, 0($a0)
 
-        beq $t1, 0, is_board_full__false
-
         pop $a0
+
+        beq $t1, 0, is_board_full__false 
 
         add $t0, $t0, 1
 
-        j is_board_full__loop
+        b is_board_full__loop
 
     is_board_full__true:
         li $v0, 1
