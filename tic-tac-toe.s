@@ -37,8 +37,7 @@ main__loop:
     jal make_move
     pop $ra
 
-    add $a1, $a1, 1
-    rem $a1, $a1, 3
+    rem $a1, $a1, 2
     add $a1, $a1, 1
 
     j main__loop
@@ -77,9 +76,12 @@ render_board__loop_col:
 
 	push $a0
 
+	push $t2
+	mul $t2, $t2, 4
 	add $a0, $a0, $t2
+	pop $t2
 
-	lb $a0, 0($a0)
+	lw $a0, 0($a0)
 
 	push $ra
 	jal render_piece
@@ -87,7 +89,7 @@ render_board__loop_col:
 
 	pop $a0
 
-    add $t1, $t1, 1
+        add $t1, $t1, 1
 
 	j render_board__loop_col
 
@@ -181,8 +183,11 @@ has_won__create_bitstate:
 
     push $a0
 
+    push $t0
+    mul $t0, $t0, 4
     add $a0, $a0, $t0
-    lb $a0, 0($a0)
+    pop $t0
+    lw $a0, 0($a0)
 
     beq $a0, $a1, has_won__add_value_to_bitstate 
 
@@ -244,9 +249,12 @@ is_board_full:
         beq $t0, 9, is_board_full__true
 
         push $a0
-
+	
+	push $t0
+	mul $t0, $t0, 4
         add $a0, $a0, $t0
-        lb $t1, 0($a0)
+	pop $t0
+        lw $t1, 0($a0)
 
         pop $a0
 
@@ -273,14 +281,21 @@ make_move__prologue:
 make_move__body:
     blt $a2, 0, make_move__fail
     bgt $a2, 8, make_move__fail
-
+    
+    push $a2
+    mul $a2, $a2, 4
     add $t0, $a0, $a2
-    lb $t0, 0($t0)
+    pop $a2
+    lw $t0, 0($t0)
 
     bne $t0, 0, make_move__fail
-
+    
+    push $a2
+    mul $a2, $a2, 4
     add $t0, $a0, $a2
-    sb $a1, 0($t0)
+    pop $a2
+
+    sw $a1, 0($t0)
 
 make_move__success:
     li $v0, 1
@@ -293,5 +308,5 @@ make_move__epilogue:
     jr $ra
 
 .data
-    state: .byte 0, 0, 0, 0, 0, 0, 0, 0, 0
+    state: .word 0, 0, 0, 0, 0, 0, 0, 0, 0
     enter_move: .asciiz "Enter your move [0-8]: "
