@@ -1,14 +1,14 @@
 # A tic-tac-toe game with an AI opponent made entirely in MIPS-32
 
 main:	
-	li $a1, 2
+    li $a1, 2
 
 main__loop:
     la $a0, state  
 
-	push $ra
-	jal has_won
-	pop $ra    
+    push $ra
+    jal has_won
+    pop $ra    
 
     beq $v0, 1, main__exit 
 
@@ -41,7 +41,7 @@ main__loop:
     rem $a1, $a1, 3
     add $a1, $a1, 1
 
-	j main__loop
+    j main__loop
 	
 main__exit:
     push $ra
@@ -293,5 +293,5 @@ make_move__epilogue:
     jr $ra
 
 .data
-	state: .byte 0, 0, 0, 0, 0, 0, 0, 0, 0
+    state: .byte 0, 0, 0, 0, 0, 0, 0, 0, 0
     enter_move: .asciiz "Enter your move [0-8]: "
